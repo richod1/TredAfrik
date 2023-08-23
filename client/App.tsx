@@ -1,20 +1,59 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import * as React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import Main from './Navigations/Main';
+import Auth from './Navigations/Auth';
+import Store from './redux/Store';
+import {Provider, useDispatch, useSelector} from 'react-redux';
+import {getAllUsers, loadUser} from './redux/actions/userAction';
+import Loader from './src/common/Loader';
+import {LogBox} from 'react-native';
+import {StatusBar} from 'native-base';
+import { getAllPosts } from './redux/actions/postAction';
+LogBox.ignoreAllLogs();
 
-export default function App() {
+function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Provider store={Store}>
+      <AppStack />
+    </Provider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const AppStack = () => {
+  const {isAuthenticated, loading} = useSelector((state: any) => state.user);
+  // const dispatch = useDispatch();
+
+  React.useEffect(() => {
+    Store.dispatch(loadUser());
+  }, []);
+
+  return (
+    <>
+      <>
+        <StatusBar
+          animated={true}
+          backgroundColor={'#fff'}
+          barStyle={'dark-content'}
+          showHideTransition={'fade'}
+        />
+      </>
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          {isAuthenticated ? (
+            <NavigationContainer>
+              <Main />
+            </NavigationContainer>
+          ) : (
+            <NavigationContainer>
+              <Auth />
+            </NavigationContainer>
+          )}
+        </>
+      )}
+    </>
+  );
+};
+
+export default App;
